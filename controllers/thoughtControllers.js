@@ -107,8 +107,8 @@ module.exports = {
                         message: 'No reaction found with that ID'
                     })
                     : Thought.findOneAndUpdate(
-                        { reactions: req.params.reactionId },
-                        { $pull: { reactions: req.params.reactionId } },
+                        { id: req.params.thoughtId },
+                        { $pull: { reactions: req.body.reactionId } },
                         { new: true }
                     )
             })
