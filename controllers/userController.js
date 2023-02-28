@@ -10,7 +10,10 @@ module.exports = {
     },
     // GET a single user by id and populate thought and friend data
     getSingleUser(req, res) {
-        User.findOne({ id: req.params.userId })
+        User.findOne({ _id: req.params.userId })
+            .select('-__v')
+            .populate('thoughts')
+            .populate('friends')
             .then((user) =>
                 !user
                     ? user.status(404).json({
@@ -33,16 +36,16 @@ module.exports = {
     // PUT update a user by its id
     updateUser(req, res) {
         User.findOneAndUpdate(
-            { id: req.params.userId },
+            { _id: req.params.userId },
             { $set: req.body },
-            { new: true },
+            { runValidators: true, new: true },
         )
             .then((user) =>
                 !user
                     ? res.status(404).json({
                         message: 'No user with this ID!'
                     })
-                    : res.json(user)
+                    : res.json({ message: 'User updated!' })
             )
             .catch((err) => {
                 console.log(err);
@@ -51,11 +54,11 @@ module.exports = {
     },
     // DELETE a user by its id
     deleteUser(req, res) {
-        User.findOneAndRemove({ id: req.params.userId })
+        User.findOneAndRemove({ _id: req.params.userId })
             .then((user) =>
                 !user
                     ? res.status(404).json({ message: 'No user with this ID!' })
-                    : res.json(user)
+                    : res.json({ message: 'User deleted!' })
             )
             .catch((err) => {
                 console.log(err);
@@ -64,7 +67,7 @@ module.exports = {
     },
     // BONUS Remove a user's associated thoughts when deleted
     deleteUserAndThoughts(req, res) {
-        User.findOneAndDelete({ id: req.params.userId })
+        User.findOneAndDelete({ _id: req.params.userId })
             .then((user) =>
                 !user
                     ? res.status(404).json({ message: 'No user with that ID' })
@@ -77,7 +80,7 @@ module.exports = {
     // POST add a new friend to user's friend list
     addFriend(req, res) {
         User.findOneAndUpdate(
-            { id: req.params.userId },
+            { _id: req.params.userId },
             { $addToSet: { friends: req.params.friendId } },
             { new: true },
         )
@@ -96,7 +99,7 @@ module.exports = {
     // DELETE a friend from user's friend list
     deleteFriend(req, res) {
         User.findOneAndUpdate(
-            { id: req.params.userId },
+            { _id: req.params.userId },
             { $pull: { friends: req.params.friendId } },
             { new: true },
         )
